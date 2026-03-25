@@ -13,7 +13,10 @@ class MysqlClientManager:
 
     def init(self):
         self.client = create_async_engine(
-            f"mysql+asyncmy://{self.config.user}:{self.config.password}@{self.config.host}:{self.config.port}/{self.config.database}?charset=utf8mb4")
+            f"mysql+asyncmy://{self.config.user}:{self.config.password}@{self.config.host}:{self.config.port}/{self.config.database}?charset=utf8mb4",
+            pool_size=5,
+            pool_pre_ping=True
+        )
 
     async def close(self):
         await self.client.dispose()
@@ -28,7 +31,7 @@ if __name__ == '__main__':
 
 
     async def main():
-        async  with AsyncSession(engine) as session:
+        async  with AsyncSession(engine,auto_flush=True,expire_on_commit=False) as session:
             sql = "select * from fact_order limit 10"
             result = await  session.execute(text(sql))
 
