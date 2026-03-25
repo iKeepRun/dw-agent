@@ -1,0 +1,82 @@
+from dataclasses import dataclass
+
+from pathlib import Path
+from omegaconf import OmegaConf
+from pydantic.v1.schema import schema
+
+
+@dataclass
+class File:
+    enable: bool
+    level: str
+    path: str
+    rolation: str
+    retention: str
+
+
+@dataclass
+class Console:
+    enable: bool
+    level: str
+
+
+@dataclass
+class LoggingConfig:
+    file: File
+    console: Console
+
+
+@dataclass
+class DBConfig:
+    host: str
+    port: int
+    user: str
+    password: str
+    database: str
+
+
+@dataclass
+class QdrantConfig:
+    host: str
+    port: int
+    embedding_size: int
+
+
+@dataclass
+class EmbeddingConfig:
+    host: str
+    model: str
+    port: int
+
+
+@dataclass
+class ESConfig:
+    host: str
+    port: int
+    index_name: str
+
+
+@dataclass
+class LLMConfig:
+    api_key: str
+    model_name: str
+    base_url: str
+
+
+@dataclass
+class AppConfig:
+    logging: LoggingConfig
+    db_meta: DBConfig
+    db_dw: DBConfig
+    qdrant: QdrantConfig
+    embedding: EmbeddingConfig
+    es: ESConfig
+    llm: LLMConfig
+
+
+config_file = Path(__file__).parent[2] / "conf" / "app_config.yaml"
+
+context = OmegaConf.load(config_file)
+schema = OmegaConf.structured(AppConfig)
+
+app_config: AppConfig = OmegaConf.to_object(OmegaConf.merge(schema, context))

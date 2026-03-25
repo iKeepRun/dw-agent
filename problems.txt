@@ -1,0 +1,7 @@
+load proxy:
+  $env:HTTP_PROXY="http://127.0.0.1:7890"
+  $env:HTTPS_PROXY="http://127.0.0.1:7890"
+check login:
+  docker login -u czqiang
+  YOUR_SECRET
+
