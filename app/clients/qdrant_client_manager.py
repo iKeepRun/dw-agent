@@ -7,9 +7,13 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 
 
 class QdrantClientManager:
+
     def __init__(self, config: QdrantConfig):
         self.config: QdrantConfig = config
-        self.client: AsyncQdrantClient = AsyncQdrantClient(
+        self.client: AsyncQdrantClient | None = None
+
+    def init(self):
+        self.client = AsyncQdrantClient(
             url=f"http://{self.config.host}:{self.config.port}")
 
     async def close(self):
@@ -21,8 +25,8 @@ qdrant_client_manager = QdrantClientManager(config=app_config.qdrant)
 
 
 async def main():
+    qdrant_client_manager.init()
     client = qdrant_client_manager.client
-
     # 创建一个集合
     await client.create_collection(
         collection_name="test_collection",

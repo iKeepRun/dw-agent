@@ -11,14 +11,14 @@ logging:
 
 db_meta:
   host: localhost
-  port: 3306
+  port: 3308
   user: atguigu
   password: Atguigu.123
   database: meta
 
 db_dw:
   host: localhost
-  port: 3306
+  port: 3308
   user: atguigu
   password: Atguigu.123
   database: dw
@@ -30,7 +30,7 @@ qdrant:
 
 embedding:
   host: localhost
-  port: 8081
+  port: 8089
   model: BAAI/bge-large-zh-v1.5
 
 es:

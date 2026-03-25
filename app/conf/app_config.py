@@ -10,7 +10,7 @@ class File:
     enable: bool
     level: str
     path: str
-    rolation: str
+    rotation: str
     retention: str
 
 
@@ -74,7 +74,7 @@ class AppConfig:
     llm: LLMConfig
 
 
-config_file = Path(__file__).parent[2] / "conf" / "app_config.yaml"
+config_file = Path(__file__).parents[2] / "conf" / "app_config.yaml"
 
 context = OmegaConf.load(config_file)
 schema = OmegaConf.structured(AppConfig)
