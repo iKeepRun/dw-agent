@@ -1,25 +1,28 @@
 import argparse
 import asyncio
-import sys
 from pathlib import Path
 
-from app.clients.mysql_client_manager import MysqlClientManager, meta_mysql_client_manager
-from app.core.log import logger
+from app.clients.mysql_client_manager import  meta_mysql_client_manager, db_mysql_client_manager
+from app.repositories.mysql.db.db_mysql_respositiry import DBMysqlRepository
 from app.repositories.mysql.meta.meta_mysql_repository import MetaMysqlRepository
 from app.services.meta_knowledge_service import MetaKnowledgeService
 
 
 async def build(conf_path: Path):
 
-    # Service->repository->session->client
+    # Service->repository->meta_session,->client
     #   初始化mysql客户端
     meta_mysql_client_manager.init()
+    db_mysql_client_manager.init()
+
     # 获取session对象
-    async with meta_mysql_client_manager.session_factory() as session:
-      # 构建repository对象
-      meta_mysql_repository = MetaMysqlRepository(session)
+    async with meta_mysql_client_manager.session_factory() as meta_session,db_mysql_client_manager.session_factory() as db_session:
+      # 构建meta_repository对象
+      meta_mysql_repository = MetaMysqlRepository(meta_session)
+      # 构建db_repository对象
+      db_mysql_repository = DBMysqlRepository(db_session)
       # 构建Service对象
-      meta_knowledge_service = MetaKnowledgeService(meta_mysql_repository)
+      meta_knowledge_service = MetaKnowledgeService(meta_mysql_repository,db_mysql_repository)
       # 调用Service层的构建方法
       await meta_knowledge_service.build(conf_path)
     # 关闭mysql连接
