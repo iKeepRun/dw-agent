@@ -1,7 +1,8 @@
 import asyncio
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from app.conf.app_config import DBConfig, app_config
 
@@ -10,6 +11,7 @@ class MysqlClientManager:
     def __init__(self, config: DBConfig):
         self.config: DBConfig = config
         self.client: AsyncEngine | None = None
+        self.session_factory: async_sessionmaker | None = None
 
     def init(self):
         self.client = create_async_engine(
@@ -17,6 +19,7 @@ class MysqlClientManager:
             pool_size=5,
             pool_pre_ping=True
         )
+        self.session_factory = async_sessionmaker(self.client, autoflush=True,expire_on_commit=False)
 
     async def close(self):
         await self.client.dispose()
@@ -31,7 +34,7 @@ if __name__ == '__main__':
 
 
     async def main():
-        async  with AsyncSession(engine,auto_flush=True,expire_on_commit=False) as session:
+        async  with db_mysql_client_manager.session_factory() as session:
             sql = "select * from fact_order limit 10"
             result = await  session.execute(text(sql))
 
