@@ -3,6 +3,8 @@ from pathlib import Path
 from omegaconf import OmegaConf
 
 from app.conf.meta_config import MetaConfig
+from app.entities.column_info import ColumnInfo
+from app.entities.table_info import TableInfo
 from app.models.column_info import ColumnInfoMySQL
 from app.models.table_info import TableInfoMySQL
 from app.repositories.mysql.db.db_mysql_respositiry import DBMysqlRepository
@@ -28,12 +30,12 @@ class MetaKnowledgeService:
         # 同步配置文件的表数据
         if meta_config.tables:
             # 申明更新数据
-            table_info_list: list[TableInfoMySQL] = []
-            column_info_list: list[ColumnInfoMySQL] = []
+            table_info_list: list[TableInfo] = []
+            column_info_list: list[ColumnInfo] = []
 
             for table in meta_config.tables:
                 # 获取每一张表数据-> meta数据库中table_info表的数据，存入数据库
-                table_info= TableInfoMySQL(id=table.name,
+                table_info= TableInfo(id=table.name,
                                            name=table.name,
                                            role=table.role,
                                            description=table.description
@@ -46,7 +48,7 @@ class MetaKnowledgeService:
                     examples = await self.db_mysql_repository.select_example(column.name,table.name)
 
 
-                    column_info = ColumnInfoMySQL(id=f'{table.name}.{column.name}',
+                    column_info = ColumnInfo(id=f'{table.name}.{column.name}',
                                                   name=column.name,
                                                   type=columns_dict[column.name],
                                                   role=column.role,
