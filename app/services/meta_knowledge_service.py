@@ -7,6 +7,8 @@ from omegaconf import OmegaConf
 
 from app.conf.meta_config import MetaConfig
 from app.entities.column_info import ColumnInfo
+from app.entities.column_metric import ColumnMetric
+from app.entities.metric_info import MetricInfo
 from app.entities.table_info import TableInfo
 from app.entities.value_info import ValueInfo
 from app.models.column_info import ColumnInfoMySQL
@@ -32,7 +34,7 @@ class MetaKnowledgeService:
         # es数据层对象
         self.value_es_repository = value_es_repository
 
-    async def _save_tables_to_meta_db(self, meta_config: MetaConfig)-> list[ColumnInfo]:
+    async def _save_tables_to_meta_db(self, meta_config: MetaConfig) -> list[ColumnInfo]:
         # 申明更新数据
         table_info_list: list[TableInfo] = []
         column_info_list: list[ColumnInfo] = []
@@ -113,7 +115,7 @@ class MetaKnowledgeService:
         # 进行向量存储
         await self.column_qdrant_repository.upsert(ids=ids, vectors=vectors, payloads=payloads)
 
-    async def _save_columns_to_es(self, meta_config:MetaConfig):
+    async def _save_columns_to_es(self, meta_config: MetaConfig):
         # 创建索引（类似于mysql数据库创建表）
         await self.value_es_repository.ensure_index()
         values_infos: list[ValueInfo] = []
@@ -132,6 +134,29 @@ class MetaKnowledgeService:
 
         await self.value_es_repository.index(values_infos)
 
+    async def _save_metrics_to_meta_db(self, meta_config: MetaConfig):
+        metric_info_list: list[MetricInfo] = []
+        column_metric_list: list[ColumnMetric] = []
+        for metric in meta_config.metrics:
+            metric_info = MetricInfo(
+                id=metric.name,
+                name=metric.name,
+                description=metric.description,
+                relevant_columns=metric.relevant_columns,
+                alias=metric.alias
+            )
+            metric_info_list.append(metric_info)
+
+            for column in metric.relevant_columns:
+                metric_column_info = ColumnMetric(
+                    metric_id=metric.name,
+                    column_id=column
+                )
+                column_metric_list.append(metric_column_info)
+
+        async  with self.meta_mysql_repository.session.begin():
+            self.meta_mysql_repository.insert_metric_info(metric_info_list)
+            self.meta_mysql_repository.insert_metric_column_info(column_metric_list)
     # 构建方法
     async def build(self, conf_path: Path):
         # 加载元数据配置文件
@@ -141,10 +166,10 @@ class MetaKnowledgeService:
         meta_config: MetaConfig = OmegaConf.to_object(OmegaConf.merge(schema, context))
 
         # logger.info(meta_config.metrics)
-        # 同步配置文件的表数据
+        # 2 同步配置文件的表数据
         if meta_config.tables:
             # 2.1 将表信息和字段信息同步到数据库中
-            column_info_list=await self._save_tables_to_meta_db(meta_config)
+            column_info_list = await self._save_tables_to_meta_db(meta_config)
 
             # 2.2 列信息建立向量索引,先创建集合
             await self._save_columns_to_qdrant(column_info_list)
@@ -152,6 +177,8 @@ class MetaKnowledgeService:
             # 2.3 对指定的维度字段取值建立全文索引
             await self._save_columns_to_es(meta_config)
 
-        # 同步配置文件的指标数据
+        # 3 同步配置文件的指标数据
         if meta_config.metrics:
-            pass
+            # 3.1 将配置文件的指标信息同步到数据库中
+            await self._save_metrics_to_meta_db(meta_config)
+
