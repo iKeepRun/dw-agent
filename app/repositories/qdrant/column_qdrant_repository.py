@@ -1,4 +1,5 @@
 from qdrant_client import AsyncQdrantClient, models
+from qdrant_client.http.models import PointStruct
 
 from app.conf.app_config import app_config
 
@@ -14,14 +15,15 @@ class ColumnQdrantRepository:
         if not await self.qdrant_client.collection_exists(self.collection_name):
             await self.qdrant_client.create_collection(
                 collection_name=self.collection_name,
-                vectors_config=models.VectorParams(size=app_config.qdrant.vector_size, distance=models.Distance.COSINE),
+                vectors_config=models.VectorParams(size=app_config.qdrant.embedding_size, distance=models.Distance.COSINE),
             )
 
-    async def upsert(self,ids:list[str],vectors:list[list[float]],payloads:dict):
-        await self.qdrant_client.upsert(
-            collection_name=self.collection_name,
-            points=[
-                models.PointStruct(id=id, vector=vector, payload=payload)
-                for id, vector, payload in zip(ids, vectors, payloads)
-            ],
-        )
+    async def upsert(self,ids:list[str],vectors:list[list[float]],payloads:list[dict],batch_size:int=10):
+        # 创建点
+        points=  [ PointStruct(id=id, vector=vector, payload=payload)     for id, vector, payload in zip(ids,vectors,payloads)]
+        # 批量插入
+        for i in range(0,len(points),batch_size):
+            await self.qdrant_client.upsert(
+                collection_name=self.collection_name,
+                points=points[i:i+batch_size]
+            )

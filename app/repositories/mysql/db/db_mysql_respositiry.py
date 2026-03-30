@@ -20,8 +20,8 @@ class DBMysqlRepository:
 
         return {row['Field']:row['Type'] for row in rows}
 
-    async def select_example(self, column_name:str,table_name:str) -> list:
-        sql=f'select distinct {column_name} from {table_name} limit 10'
+    async def select_example(self, column_name:str,table_name:str,limit:int=10) -> list:
+        sql=f'select distinct {column_name} from {table_name} limit {limit}'
 
         result=await self.session.execute(text(sql))
 

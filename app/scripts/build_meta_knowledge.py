@@ -3,8 +3,10 @@ import asyncio
 from pathlib import Path
 
 from app.clients.embedding_client_manager import embedding_client_manager
+from app.clients.es_client_manager import es_client_manager
 from app.clients.mysql_client_manager import  meta_mysql_client_manager, db_mysql_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
+from app.repositories.es.value_es_repository import ValueEsRepository
 from app.repositories.mysql.db.db_mysql_respositiry import DBMysqlRepository
 from app.repositories.mysql.meta.meta_mysql_repository import MetaMysqlRepository
 from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantRepository
@@ -19,6 +21,7 @@ async def build(conf_path: Path):
     db_mysql_client_manager.init()
     qdrant_client_manager.init()
     embedding_client_manager.init()
+    es_client_manager.init()
 
     # 获取session对象
     async with meta_mysql_client_manager.session_factory() as meta_session,db_mysql_client_manager.session_factory() as db_session:
@@ -28,13 +31,16 @@ async def build(conf_path: Path):
       db_mysql_repository = DBMysqlRepository(db_session)
       # 构建column_qdrant_repository对象
       column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)
-
+      # 构建es_repository对象
+      value_es_repository = ValueEsRepository(es_client_manager.client)
 
       # 构建Service对象
       meta_knowledge_service = MetaKnowledgeService(meta_mysql_repository=meta_mysql_repository,
                                                     db_mysql_repository=db_mysql_repository,
                                                     column_qdrant_repository=column_qdrant_repository,
-                                                    embedding_client=embedding_client_manager.client)
+                                                    embedding_client=embedding_client_manager.client,
+                                                    value_es_repository=value_es_repository
+                                                    )
       # 调用Service层的构建方法
       await meta_knowledge_service.build(conf_path)
 
@@ -42,6 +48,7 @@ async def build(conf_path: Path):
     await meta_mysql_client_manager.close()
     await db_mysql_client_manager.close()
     await qdrant_client_manager.close()
+    await es_client_manager.close()
 
 if __name__ == '__main__':
     # 构建脚本命令行参数解析器
