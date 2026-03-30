@@ -14,7 +14,7 @@ class ValueEsRepository:
     # 创建索引
     async def ensure_index(self):
         if not await self.client.indices.exists(index=self.index_name):
-            self.client.indices.create(index=self.index_name)
+            await self.client.indices.create(index=self.index_name)
 
     async def index(self, values_infos:list[ValueInfo], batch_size:int=10):
         for i in range(0,len(values_infos),batch_size):

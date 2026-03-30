@@ -10,6 +10,7 @@ from app.repositories.es.value_es_repository import ValueEsRepository
 from app.repositories.mysql.db.db_mysql_respositiry import DBMysqlRepository
 from app.repositories.mysql.meta.meta_mysql_repository import MetaMysqlRepository
 from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantRepository
+from app.repositories.qdrant.metric_qdrant_repository import MetricQdrantRepository
 from app.services.meta_knowledge_service import MetaKnowledgeService
 
 
@@ -33,13 +34,15 @@ async def build(conf_path: Path):
       column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)
       # 构建es_repository对象
       value_es_repository = ValueEsRepository(es_client_manager.client)
-
+      # 构建metric_qdrant_repository对象
+      metric_qdrant_repository = MetricQdrantRepository(qdrant_client_manager.client)
       # 构建Service对象
       meta_knowledge_service = MetaKnowledgeService(meta_mysql_repository=meta_mysql_repository,
                                                     db_mysql_repository=db_mysql_repository,
                                                     column_qdrant_repository=column_qdrant_repository,
                                                     embedding_client=embedding_client_manager.client,
-                                                    value_es_repository=value_es_repository
+                                                    value_es_repository=value_es_repository,
+                                                    metric_qdrant_repository=metric_qdrant_repository
                                                     )
       # 调用Service层的构建方法
       await meta_knowledge_service.build(conf_path)

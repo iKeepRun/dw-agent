@@ -4,11 +4,11 @@ from qdrant_client.models import PointStruct
 from app.conf.app_config import app_config
 
 
-class ColumnQdrantRepository:
+class MetricQdrantRepository:
     def __init__(self, qdrant_client: AsyncQdrantClient):
         self.qdrant_client = qdrant_client
 
-    collection_name = "column_collections"
+    collection_name = "metric_collections"
 
     async def ensure_collection(self):
         # Create a collection
@@ -20,7 +20,7 @@ class ColumnQdrantRepository:
 
     async def upsert(self,ids:list[str],vectors:list[list[float]],payloads:list[dict],batch_size:int=10):
         # 创建点
-        points=  [ PointStruct(id=id, vector=vector, payload=payload)     for id, vector, payload in zip(ids,vectors,payloads)]
+        points=  [ PointStruct(id=id, vector=vector, payload=payload)    for id, vector, payload in zip(ids,vectors,payloads)]
         # 批量插入
         for i in range(0,len(points),batch_size):
             await self.qdrant_client.upsert(
