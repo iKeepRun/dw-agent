@@ -161,6 +161,7 @@ class MetaKnowledgeService:
             self.meta_mysql_repository.insert_metric_info(metric_info_list)
             self.meta_mysql_repository.insert_metric_column_info(column_metric_list)
         return metric_info_list
+
     async def _save_metrics_to_qdrant(self, metric_info_list: list[MetricInfo]):
         await self.metric_qdrant_repository.ensure_collection()
         # 为每一条数据建立索引，为了能尽可能多的命中索引，这里将数据拆分为多个向量（name,description,alias）
@@ -204,15 +205,16 @@ class MetaKnowledgeService:
         payloads = [point["payload"] for point in points]
         # 进行向量存储
         await self.metric_qdrant_repository.upsert(ids=ids, vectors=vectors, payloads=payloads)
+
     # 构建方法
     async def build(self, conf_path: Path):
-        # 加载元数据配置文件
+        # 1 加载元数据配置文件
         context = OmegaConf.load(conf_path)
         schema = OmegaConf.structured(MetaConfig)
 
         meta_config: MetaConfig = OmegaConf.to_object(OmegaConf.merge(schema, context))
         logger.info("加载元数据配置文件成功")
-        # logger.info(meta_config.metrics)
+
         # 2 同步配置文件的表数据
         if meta_config.tables:
             # 2.1 将表信息和字段信息同步到数据库中
