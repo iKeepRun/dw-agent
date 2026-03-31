@@ -18,6 +18,8 @@ from app.agent.nodes.extract_keywords import extract_keywords
 from app.agent.nodes.run_sql import run_sql
 from app.agent.nodes.validate_sql import validate_sql
 from app.agent.state import DataAgentState
+from app.clients.qdrant_client_manager import qdrant_client_manager
+from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantRepository
 
 graph_builder = StateGraph(state_schema=DataAgentState,context_schema=DataAgentContext)
 
@@ -68,12 +70,17 @@ graph=graph_builder.compile()
 
 if __name__ == '__main__':
     async def test():
+        qdrant_client_manager.init()
+        column_qdrant_repository=ColumnQdrantRepository(qdrant_client_manager.client)
+
         state=DataAgentState(query='查询华北地区的销售总额')
-        # state=DataAgentState({'query':'查询华北地区的销售总额'})
-        context=DataAgentContext()
+
+        context=DataAgentContext(column_qdrant_repository=column_qdrant_repository)
+
         async for chunk in graph.astream(input=state, context=context,stream_mode="custom"):
             print(chunk)
 
-
+        #释放连接
+        await qdrant_client_manager.close()
     asyncio.run(test())
 
