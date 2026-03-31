@@ -1,5 +1,6 @@
 import asyncio
 
+from dns.e164 import query
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
@@ -67,9 +68,10 @@ graph=graph_builder.compile()
 
 if __name__ == '__main__':
     async def test():
-        state=DataAgentState()
+        state=DataAgentState(query='查询华北地区的销售总额')
+        # state=DataAgentState({'query':'查询华北地区的销售总额'})
         context=DataAgentContext()
-        async for chunk in graph.astream(input=state, context=context,stream_mode="update"):
+        async for chunk in graph.astream(input=state, context=context,stream_mode="custom"):
             print(chunk)
 
 
