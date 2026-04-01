@@ -18,6 +18,7 @@ from app.agent.nodes.extract_keywords import extract_keywords
 from app.agent.nodes.run_sql import run_sql
 from app.agent.nodes.validate_sql import validate_sql
 from app.agent.state import DataAgentState
+from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
 from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantRepository
 
@@ -72,10 +73,12 @@ if __name__ == '__main__':
     async def test():
         qdrant_client_manager.init()
         column_qdrant_repository=ColumnQdrantRepository(qdrant_client_manager.client)
-
-        state=DataAgentState(query='查询华北地区的销售总额')
-
-        context=DataAgentContext(column_qdrant_repository=column_qdrant_repository)
+        # 初始化embedding_client
+        embedding_client_manager.init()
+        # 构建参数
+        state=DataAgentState(query='统计华北地区的销售总额')
+        context=DataAgentContext(column_qdrant_repository=column_qdrant_repository,
+                                 embedding_client=embedding_client_manager.client)
 
         async for chunk in graph.astream(input=state, context=context,stream_mode="custom"):
             print(chunk)

@@ -1,3 +1,4 @@
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from typing_extensions import TypedDict
 
 from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantRepository
@@ -5,3 +6,4 @@ from app.repositories.qdrant.column_qdrant_repository import ColumnQdrantReposit
 
 class DataAgentContext(TypedDict):
     column_qdrant_repository: ColumnQdrantRepository
+    embedding_client:HuggingFaceEndpointEmbeddings
