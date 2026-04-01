@@ -30,3 +30,17 @@ class ValueEsRepository:
                 index=self.index_name,
                 operations=batch_operations
             )
+
+    async def select(self, result,min_score=0.6,limit=5):
+        res=await self.client.search(
+            index=self.index_name,
+            query={
+                "match": {
+                    "value": result
+                }
+            },
+            min_score=min_score,
+            size=limit
+        )
+        
+        return  [ValueInfo(**r['_source']) for r in res['hits']['hits']]

@@ -32,9 +32,9 @@ async def recall_column(state:DataAgentState,runtime:Runtime[DataAgentContext]):
 
     extra_keywords=await  extra_keywords_chain.ainvoke(input={'query':query})
 
-    logger.info(f'大模型补充的关键词为: {extra_keywords}')
+    # logger.info(f'大模型补充的关键词为: {extra_keywords}')
     final_keywords=list(set(keywords+extra_keywords))
-    logger.info(f'最终的提取关键词为: {final_keywords}')
+    logger.info(f'召回字段节点-->最终的提取关键词为: {final_keywords}')
     # 批量向量化
     embedding_steps=10
     embedding_texts:list[list[float]]=[]

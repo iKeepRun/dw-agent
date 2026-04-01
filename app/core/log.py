@@ -8,7 +8,7 @@ from app.conf.app_config import app_config
 log_format = (
      "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
      "<level>{level: <8}</level> | "
-     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+     "<cyan>{name: <32}</cyan>:<cyan>{function:<15}</cyan>:<cyan>{line: >4}</cyan> - "
      "<level>{message}</level>"
 )
 

@@ -44,7 +44,7 @@ class ColumnQdrantRepository:
             # 去重操作
             column_infos=[ColumnInfo(**search_result.payload) for search_result in search_results]
             col_ids=[column_info.id for column_info in column_infos]
-            logger.info(f"检索到的column_infos信息为：{col_ids}")
+            # logger.info(f"检索到的column_infos信息为：{col_ids}")
             for column_info in column_infos:
                 if column_info.id not in map:
                     map[column_info.id]=column_info
