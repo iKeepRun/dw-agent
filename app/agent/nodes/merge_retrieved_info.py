@@ -41,13 +41,22 @@ async def merge_retrieved_info(state: DataAgentState, runtime: Runtime[DataAgent
 
       # 构建需要的目标数据table_infos
     table_to_column_map:dict[str,list[ColumnInfo]]={}
+       # 根据table_id进行分组
     for column_info in column_infos_map.values():
        table_id=column_info.table_id
        if table_id not in table_to_column_map:
            table_to_column_map[column_info.table_id]=[]
        table_to_column_map[table_id].append(column_info)
-    # retrieved_column_infos = list(column_infos_map.values())
 
+      # 强制添加表的主外键字段（避免大模型召回的不稳定性）
+    for key in table_to_column_map.keys():
+        key_columns:list[ColumnInfo]=await  meta_mysql_repository.get_key_info_by_id(key)
+        column_ids=[ column_info.id for column_info in table_to_column_map[key]]
+        for key_column in key_columns:
+            if key_column.id not in column_ids:
+                table_to_column_map[key].append(key_column)
+
+      # 将表信息整理成目标格式
     table_infos:list[TableInfoState]=[]
     for table_id, column_infos in table_to_column_map.items():
         table_info:TableInfo=await meta_mysql_repository.get_table_info_by_id(table_id)

@@ -1,4 +1,5 @@
 from huggingface_hub import model_info
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.mysql_client_manager import meta_mysql_client_manager
@@ -42,3 +43,9 @@ class MetaMysqlRepository:
     async def get_table_info_by_id(self, table_id:str):
         table_info_mysql: TableInfoMySQL = await self.session.get(TableInfoMySQL, table_id)
         return TableInfoMapper.to_entity(table_info_mysql)
+
+    async def get_key_info_by_id(self, table_id:str):
+        sql="select * from column_info where table_id=:table_id and role in ('primary_key','foreign_key')"
+        execute=await  self.session.execute(text(sql),{'table_id':table_id})
+
+        return [ ColumnInfo(**dict(row)) for row  in execute.mappings().fetchall()]
