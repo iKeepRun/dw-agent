@@ -54,6 +54,7 @@ async def build(conf_path: Path):
     await es_client_manager.close()
 
 if __name__ == '__main__':
+    # 控制台执行脚本 python -m app.scripts.build_meta_knowledge -c  conf/meta_config.yaml
     # 构建脚本命令行参数解析器
     parse = argparse.ArgumentParser()
     # 添加命令行参数conf(元数据配置文件路径)

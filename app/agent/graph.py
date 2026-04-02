@@ -79,22 +79,20 @@ if __name__ == '__main__':
         qdrant_client_manager.init()
         es_client_manager.init()
         meta_mysql_client_manager.init()
-
-        column_qdrant_repository=ColumnQdrantRepository(qdrant_client_manager.client)
-        metric_qdrant_repository=MetricQdrantRepository(qdrant_client_manager.client)
-        value_es_repository=ValueEsRepository(es_client_manager.client)
-
         # 初始化embedding_client
         embedding_client_manager.init()
 
-        async  with meta_mysql_client_manager.session_factory() as session:
+        async  with meta_mysql_client_manager.session_factory() as meta_session:
+            column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)
+            metric_qdrant_repository = MetricQdrantRepository(qdrant_client_manager.client)
+            value_es_repository = ValueEsRepository(es_client_manager.client)
             # 构建参数
             state=DataAgentState(query='统计华北地区的销售总额')
             context=DataAgentContext(column_qdrant_repository=column_qdrant_repository,
                                      embedding_client=embedding_client_manager.client,
                                      metric_qdrant_repository=metric_qdrant_repository,
                                      value_es_repository=value_es_repository,
-                                     meta_mysql_repository=MetaMysqlRepository(session),
+                                     meta_mysql_repository=MetaMysqlRepository(meta_session),
                                      )
 
             async for chunk in graph.astream(input=state, context=context,stream_mode="custom"):

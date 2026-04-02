@@ -36,7 +36,7 @@ async def recall_column(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     final_keywords=list(set(keywords+extra_keywords))
     logger.info(f'召回字段节点-->最终的提取关键词为: {final_keywords}')
     # 批量向量化
-    embedding_steps=10
+    embedding_steps=4
     embedding_texts:list[list[float]]=[]
     for i in range(0,len(final_keywords),embedding_steps):
         embedding_currents=await embedding_client.aembed_documents(final_keywords[i:i+embedding_steps])

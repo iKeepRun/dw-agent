@@ -32,3 +32,6 @@ class DataAgentState(TypedDict):
     retrieved_column_infos:list[ColumnInfo]  #召回的字段信息(去重)
     retrieved_metric_infos:list[MetricInfo]  #召回的指标信息(去重)
     value_infos:list[ValueInfo]              #召回的值信息(去重)
+
+    table_infos: list[TableInfoState]   # 表信息
+    metric_infos: list[MetricInfoState]   # 指标信息
