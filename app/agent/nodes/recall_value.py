@@ -31,4 +31,4 @@ async def recall_value(state:DataAgentState,runtime:Runtime[DataAgentContext]):
            if value_info.id  not in value_infos_map:
                value_infos_map[value_info.id]=value_info
    logger.info(f'召回的取值信息为：{value_infos_map.keys()}')
-   return   {"value_info":list(value_infos_map.values())}
+   return   {"value_infos":list(value_infos_map.values())}
