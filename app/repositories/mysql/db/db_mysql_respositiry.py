@@ -30,3 +30,9 @@ class DBMysqlRepository:
         values=[row[column_name] for row in rows]
         # logger.info(f'values: {values}')
         return values
+
+    async def get_db_info(self):
+       rows= await self.session.execute(text('select version()'))
+       version=rows.scalar()
+       dialect=self.session.bind.dialect.name
+       return { 'version':version,'dialect':dialect}

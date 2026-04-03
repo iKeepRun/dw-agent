@@ -228,9 +228,10 @@ class MetaKnowledgeService:
             logger.info("对指定的维度字段取值建立全文索引成功")
         # 3 同步配置文件的指标数据
         if meta_config.metrics:
-            # 3.1 将配置文件的指标信息同步到数据库中
+
+            # # 3.1 将配置文件的指标信息同步到数据库中
             metric_info_list=await self._save_metrics_to_meta_db(meta_config)
             logger.info("同步指标信息到数据库成功")
-            # 3.2 将指标信息建立向量索引
+            # # 3.2 将指标信息建立向量索引
             await self._save_metrics_to_qdrant(metric_info_list)
             logger.info("指标信息建立向量索引成功")
