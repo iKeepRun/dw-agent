@@ -105,5 +105,7 @@ if __name__ == '__main__':
         #释放连接
         await qdrant_client_manager.close()
         await es_client_manager.close()
+        await meta_mysql_client_manager.close()
+        await db_mysql_client_manager.close()
     asyncio.run(test())
 
