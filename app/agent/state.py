@@ -46,4 +46,6 @@ class DataAgentState(TypedDict):
     table_infos: list[TableInfoState]   # 表信息
     metric_infos: list[MetricInfoState]   # 指标信息
 
+    date_info: DateInfoState
+    db_info: DBInfoState
     sql:str  # 生成的sql

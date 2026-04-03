@@ -10,6 +10,8 @@ from app.utils.load_prompt import load_prompt
 from app.core.log import logger
 
 async def recall_value(state:DataAgentState,runtime:Runtime[DataAgentContext]):
+   write = runtime.stream_writer
+   write('召回字段取值')
 
    query = state['query']
    keywords = state['keywords']
