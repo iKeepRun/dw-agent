@@ -1,3 +1,5 @@
+import json
+
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 from app.agent.context import DataAgentContext
@@ -28,15 +30,18 @@ class QueryService:
 
 
     async def query(self, query: str):
-    # 构建参数
-        state = DataAgentState(query=query)
-        context = DataAgentContext(column_qdrant_repository=self.column_qdrant_repository,
-                                   embedding_client=self.embedding_client,
-                                   metric_qdrant_repository=self.metric_qdrant_repository,
-                                   value_es_repository=self.value_es_repository,
-                                   meta_mysql_repository=self.meta_mysql_repository,
-                                   db_mysql_repository=self.db_mysql_repository,
-                                   )
+       try:
+        # 构建参数
+            state = DataAgentState(query=query)
+            context = DataAgentContext(column_qdrant_repository=self.column_qdrant_repository,
+                                       embedding_client=self.embedding_client,
+                                       metric_qdrant_repository=self.metric_qdrant_repository,
+                                       value_es_repository=self.value_es_repository,
+                                       meta_mysql_repository=self.meta_mysql_repository,
+                                       db_mysql_repository=self.db_mysql_repository,
+                                       )
 
-        async for chunk in graph.astream(input=state, context=context, stream_mode="custom"):
-            yield f'data: {chunk}\n\n'
+            async for chunk in graph.astream(input=state, context=context, stream_mode="custom"):
+                yield f'data: {json.dumps(chunk, ensure_ascii=False,default= str)}\n\n'
+       except Exception as e:
+           yield f'data: {json.dumps({"type": 'error', "message": str(e)}, ensure_ascii=False,default= str)}\n\n'

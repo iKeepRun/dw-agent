@@ -11,26 +11,32 @@ from app.core.log import logger
 
 async def generate_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer=runtime.stream_writer
-    writer('生成SQL')
+    writer({'type':'progress','step':'生成SQL','status':'running'})
 
+    try:
+        query=state['query']
+        table_infos=state['table_infos']
+        metric_infos=state['metric_infos']
+        date_info=state['date_info']
+        db_info=state['db_info']
 
-    query=state['query']
-    table_infos=state['table_infos']
-    metric_infos=state['metric_infos']
-    date_info=state['date_info']
-    db_info=state['db_info']
+        prompt=PromptTemplate(template=load_prompt('generate_sql'),input_variables=['query','table_infos','metric_infos','date_info','db_info'])
 
-    prompt=PromptTemplate(template=load_prompt('generate_sql'),input_variables=['query','table_infos','metric_infos','date_info','db_info'])
+        chain=prompt | llm | StrOutputParser ()
 
-    chain=prompt | llm | StrOutputParser ()
+        chain_result=await chain.ainvoke(input={'query':query,
+                             'table_infos':yaml.dump(table_infos,allow_unicode= True,sort_keys= False),
+                             'metric_infos':yaml.dump(metric_infos,allow_unicode= True,sort_keys= False),
+                             'date_info':yaml.dump(date_info,allow_unicode= True,sort_keys= False),
+                             'db_info':yaml.dump(db_info,allow_unicode= True,sort_keys= False)
+                             })
 
-    chain_result=await chain.ainvoke(input={'query':query,
-                         'table_infos':yaml.dump(table_infos,allow_unicode= True,sort_keys= False),
-                         'metric_infos':yaml.dump(metric_infos,allow_unicode= True,sort_keys= False),
-                         'date_info':yaml.dump(date_info,allow_unicode= True,sort_keys= False),
-                         'db_info':yaml.dump(db_info,allow_unicode= True,sort_keys= False)
-                         })
+        logger.info(f'生成的SQL为: {chain_result}')
 
-    logger.info(f'生成的SQL为: {chain_result}')
+        writer({'type':'progress','step':'生成SQL','status':'success'})
 
-    return {"sql":chain_result}
+        return {"sql":chain_result}
+    except Exception as e:
+        logger.error(f'生成SQL失败: {e}')
+        writer({'type':'progress','step':'生成SQL','status':'error'})
+        raise e
