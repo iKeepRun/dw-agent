@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from pathlib import Path
 from omegaconf import OmegaConf
-from pydantic.v1.schema import schema
 
 
 @dataclass

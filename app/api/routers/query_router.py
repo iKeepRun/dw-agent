@@ -1,24 +1,22 @@
 import asyncio
 from socketserver import StreamRequestHandler
+from typing import Annotated
 
-from aiohttp.web_response import StreamResponse
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Body
 from starlette.responses import StreamingResponse
 
+from app.api.dependencies import get_query_service
 from app.api.schemas.query_schema import QuerySchema
+from app.services.query_service import QueryService
 
 query_router=APIRouter ()
 
-async def fake_stream():
-    for i in range(10):
-        await asyncio.sleep(1)
-        yield f"data: step:{i}\n\n"
-
-
-
 @query_router.post("/api/query")
-async def query_handler(query:QuerySchema):
+async def query_handler(
+        query_data:Annotated[QuerySchema,Body()],
+        query_service:Annotated[QueryService ,Depends(get_query_service)]):
+
    return StreamingResponse (
-       fake_stream(),
+       query_service.query(query_data.query),
        media_type="text/event-stream"
    )
